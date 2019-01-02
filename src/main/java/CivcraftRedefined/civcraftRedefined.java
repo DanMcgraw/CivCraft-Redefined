@@ -1,5 +1,6 @@
 package CivcraftRedefined;
 
+import CivcraftRedefined.WorldGen.WorldGeneration;
 import CivcraftRedefined.functions.MineBlock;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import org.spongepowered.api.entity.living.monster.Monster;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
+import org.spongepowered.api.event.entity.CollideEntityEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.entity.living.humanoid.player.RespawnPlayerEvent;
@@ -104,6 +106,7 @@ public class civcraftRedefined {
     public void onWorldLoad(LoadWorldEvent event) {
         World world = event.getTargetWorld();
         logger.info("World loaded: " + world.getName());
+        logger.info("Sea level: " + world.getSeaLevel());
         UUID uniqueId = world.getUniqueId();
 
         if (world.getName().contains("world")) {
@@ -200,7 +203,7 @@ public class civcraftRedefined {
         if (!event.getEntities().isEmpty())
             if (event.getEntities().get(0) instanceof ExperienceOrb) {
                 int random = (int) (Math.random() * 100);
-                if (random > 10)
+                if (random > 100)
                     event.getEntities().clear();
                 else
                     event.getEntities().get(0).offer(Keys.CONTAINED_EXPERIENCE, 1);
@@ -231,6 +234,14 @@ public class civcraftRedefined {
 //            this.getLogger().info("die: "+event.getTargetEntity().getContainers().toString());
 //        }
 //    }
+
+    @Listener
+    public void onXPGain(CollideEntityEvent event) {
+        event.getEntities().stream().filter(xp -> (xp instanceof ExperienceOrb)).forEach(xp -> {
+            xp.remove();
+        });
+        event.getEntities().removeIf(xp -> (xp instanceof ExperienceOrb));
+    }
 
     @Listener
     public void onPlayerDeath(DestructEntityEvent.Death event) {
