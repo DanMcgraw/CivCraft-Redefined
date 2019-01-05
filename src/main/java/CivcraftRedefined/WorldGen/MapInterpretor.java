@@ -1,4 +1,4 @@
-package CivcraftRedefined;
+package CivcraftRedefined.WorldGen;
 
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.text.Text;

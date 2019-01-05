@@ -1,5 +1,6 @@
 package CivcraftRedefined;
 
+import CivcraftRedefined.WorldGen.MapInterpretor;
 import CivcraftRedefined.WorldGen.WorldGeneration;
 import CivcraftRedefined.functions.MineBlock;
 import com.google.inject.Inject;
@@ -33,6 +34,7 @@ import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.util.Direction;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -256,7 +258,7 @@ public class civcraftRedefined {
                 long duration = ((90) * 60) * 1000;
                 time.setTime(time.getTime() + duration);
                 databaseCommands.tempBanUser(player, time);
-                player.kick(Text.of(TextColors.DARK_BLUE, "You have been temporarily banned until\n", TextColors.BLUE, time, TextColors.DARK_BLUE, "\nfor dying too much.", DataTypes.timeDifference(now, time)));
+                player.kick(Text.of(TextSerializers.FORMATTING_CODE.deserialize("&9You have been temporarily banned until\n&3" + time + "\n&9for being a loser.\nThats " + DataTypes.timeDifference(now, time))));
             } else {
                 playerDeathXP.put(id, --level);
             }

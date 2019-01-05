@@ -18,12 +18,14 @@ public class MutableBlockVolumeAdapter implements MutableBlockVolume {
     public final MutableBlockVolume delegate;
     public final int offsetY, minY, maxY;
     public final World world;
+    public final PerlinMaps perlinMaps;
 
-    public MutableBlockVolumeAdapter(MutableBlockVolume delegate, int offsetY, int minY, World world) {
+    public MutableBlockVolumeAdapter(MutableBlockVolume delegate, int offsetY, int minY, World world, PerlinMaps perlinMaps) {
         if (delegate == null)
             throw new IllegalArgumentException("delegate");
 
         this.world = world;
+        this.perlinMaps = perlinMaps;
         this.delegate = delegate;
         this.offsetY = offsetY;
         this.minY = minY;
@@ -32,21 +34,32 @@ public class MutableBlockVolumeAdapter implements MutableBlockVolume {
 
     @Override
     public boolean setBlock(int x, int y, int z, BlockState block) {
+        BiomeType type = world.getBiome(x, 0, z);
+        if (block.equals(BlockTypes.WATER.getDefaultState())) {
+            if (y > 64)
+                block = BlockTypes.AIR.getDefaultState();
+        } else if (block.equals(BlockTypes.AIR.getDefaultState())) {
+            if (y <= 64)
+                block = BlockTypes.WATER.getDefaultState();
+        }
         if (y == 0)
             return this.delegate.setBlock(x, y, z, BlockTypes.BEDROCK.getDefaultState());
-        if (y < this.minY || y > this.maxY)
-            return false;
-        BiomeType type = world.getBiome(x, 0, z);
+
+
         if (type.equals(BiomeTypes.MESA_PLATEAU)) {
-            this.delegate.setBlock(x, (int) (Math.max(0, y + this.offsetY - 23) * 1.5) + 23, z, block);
-            return this.delegate.setBlock(x, (int) (Math.max(0, y + this.offsetY - 23) * 1.5) + 24, z, block);
+            if ((int) (perlinMaps.MESA.getNoiseLevelAtPosition(x, z) * 16) + 208 > y)
+                return this.delegate.setBlock(x, y, z, BlockTypes.STONE.getDefaultState());
+            else
+                return this.delegate.setBlock(x, y, z, BlockTypes.AIR.getDefaultState());
 
         }
         if (type.equals(BiomeTypes.MESA) || type.equals(BiomeTypes.DESERT_HILLS)) {
-            this.delegate.setBlock(x, Math.max(0, (int) (Math.min(0, y + this.offsetY - 23) * 1.25) + 23), z, block);
-            return this.delegate.setBlock(x, Math.max(0, (int) (Math.min(0, y + this.offsetY - 23) * 1.25) + 22), z, block);
+            this.delegate.setBlock(x, (int) (Math.max(0, ((y + this.offsetY - 23) * 1.25) + 23)), z, block);
+            return this.delegate.setBlock(x, (int) (Math.max(0, ((y + this.offsetY - 23) * 1.25) + 22)), z, block);
 
         }
+        if (y < this.minY || y > this.maxY)
+            return false;
         return this.delegate.setBlock(x, ((y + this.offsetY)), z, block);
     }
 

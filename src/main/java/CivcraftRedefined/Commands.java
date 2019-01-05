@@ -6,6 +6,7 @@ import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.profile.GameProfileManager;
 import org.spongepowered.api.text.Text;
@@ -31,8 +32,38 @@ public class Commands {
             })
             .build();
 
+    CommandSpec biomeStats = CommandSpec.builder()
+            .description(Text.of("View information about biome"))
+            .permission("civcraft.command.biomeinfo")
+
+            .arguments(
+                    GenericArguments.optional(GenericArguments.string(Text.of("biome"))))
+
+            .executor((CommandSource src, CommandContext args) -> {
+
+                String playerName;
+
+                if (args.getOne("biome").isPresent())
+                    playerName = args.<String>getOne("biome").get();
+
+                if (src instanceof Player) {
+                    Player player = (Player) src;
+                    player.getLocation().getExtent().getProperties().getSeed();
+                    player.sendMessage(Text.of("Current Biome:    " + player.getLocation().getBiome().getName()));
+                    player.sendMessage(Text.of("Current Temp:     " + player.getLocation().getExtent().getProperties(player.getLocation().getPosition().toInt()).toString()));
+                    player.sendMessage(Text.of("Current Humidity: " + player.getLocation().getBiome().getHumidity()));
+                }
+
+                //civcraftRedefined.getDatabase().unbanPlayer(getUser(playerName));
+
+
+                return CommandResult.success();
+            })
+            .build();
+
     public Commands() {
         Sponge.getCommandManager().register(civcraftRedefined.getInstance(), unTempBan, "untempban");
+        Sponge.getCommandManager().register(civcraftRedefined.getInstance(), biomeStats, "bio");
     }
 
     public UUID getUser(String name) {

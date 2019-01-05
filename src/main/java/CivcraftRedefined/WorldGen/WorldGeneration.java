@@ -25,9 +25,11 @@ import java.util.List;
 
 public class WorldGeneration {
     private GenerationPopulator originalGenerationPopulator;
+    private PerlinMaps perlinMaps;
     public class SolidWorldGeneratorModifier implements WorldGeneratorModifier {
         @Override
         public void modifyWorldGenerator(WorldProperties world, DataContainer settings, WorldGenerator worldGenerator) {
+            perlinMaps = new PerlinMaps(world.getSeed());
             GroundCoverLayerPopulator groundCoverPopulator = new GroundCoverLayerPopulator();
 
             for (BiomeType biomeType : Sponge.getRegistry().getAllOf(BiomeType.class)) {
@@ -39,6 +41,10 @@ public class WorldGeneration {
                 }
                 biomeData.setMaxHeight(0.25f);
                 biomeData.setMinHeight(0.15f);
+                //biomeData.getPopulators().clear();
+                //biomeData.getGenerationPopulators(GenerationPopulator)
+                biomeData.getGenerationPopulators().clear();
+
                 List<GroundCoverLayer> biomeLayers = biomeData.getGroundCoverLayers();
                 groundCoverPopulator.getBiomeLayers(biomeType).addAll(biomeLayers);
                 biomeLayers.clear();
@@ -46,10 +52,15 @@ public class WorldGeneration {
             }
             //worldGenerator.getPopulators().clear();
             worldGenerator.getPopulators(Dungeon.class).clear();
+            worldGenerator.getPopulators().clear();
+
             originalGenerationPopulator = worldGenerator.getBaseGenerationPopulator();
-            GenerationPopulatorAdapter sinusoidalGenerator = new GenerationPopulatorAdapter(-40, 40);
+            worldGenerator.getGenerationPopulators().clear();
+
+            GenerationPopulatorAdapter sinusoidalGenerator = new GenerationPopulatorAdapter(-40, 40, perlinMaps);
             sinusoidalGenerator.getPopulators().add(originalGenerationPopulator);
             sinusoidalGenerator.getPopulators().add(groundCoverPopulator);
+
 
             worldGenerator.setBiomeGenerator(new IslandBiomeGen());
             worldGenerator.setBaseGenerationPopulator(sinusoidalGenerator);
@@ -69,10 +80,12 @@ public class WorldGeneration {
     public class GenerationPopulatorAdapter implements GenerationPopulator {
         public final int offsetY, minY;
         private final List<GenerationPopulator> populators = new ArrayList<>();
+        private final PerlinMaps maps;
 
-        public GenerationPopulatorAdapter(int offsetY, int minY) {
+        public GenerationPopulatorAdapter(int offsetY, int minY, PerlinMaps maps) {
             this.offsetY = offsetY;
             this.minY = minY;
+            this.maps = maps;
         }
 
         public List<GenerationPopulator> getPopulators() {
@@ -81,7 +94,7 @@ public class WorldGeneration {
 
         @Override
         public void populate(World world, MutableBlockVolume volume, ImmutableBiomeVolume biomes) {
-            MutableBlockVolumeAdapter adapter = new MutableBlockVolumeAdapter(volume, this.offsetY, this.minY, world);
+            MutableBlockVolumeAdapter adapter = new MutableBlockVolumeAdapter(volume, this.offsetY, this.minY, world, maps);
 
             for (GenerationPopulator p : this.populators) {
                 try {
