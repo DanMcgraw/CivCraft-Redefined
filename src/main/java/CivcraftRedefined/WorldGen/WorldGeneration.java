@@ -3,6 +3,7 @@ package CivcraftRedefined.WorldGen;
 import CivcraftRedefined.civcraftRedefined;
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.biome.BiomeGenerationSettings;
@@ -24,46 +25,42 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WorldGeneration {
-    private GenerationPopulator originalGenerationPopulator;
     private PerlinMaps perlinMaps;
     public class SolidWorldGeneratorModifier implements WorldGeneratorModifier {
         @Override
         public void modifyWorldGenerator(WorldProperties world, DataContainer settings, WorldGenerator worldGenerator) {
             perlinMaps = new PerlinMaps(world.getSeed());
             GroundCoverLayerPopulator groundCoverPopulator = new GroundCoverLayerPopulator();
+            civcraftRedefined.getInstance().getLogger().info(civcraftRedefined.getMapInterpretor().getBiomeAt(0, 0).getName());
+            civcraftRedefined.getInstance().getLogger().info(civcraftRedefined.getMapInterpretor().getBiomeAt(20, 250).getName());
 
             for (BiomeType biomeType : Sponge.getRegistry().getAllOf(BiomeType.class)) {
                 BiomeGenerationSettings biomeData = worldGenerator.getBiomeSettings(biomeType);
                 biomeData.getPopulators().removeIf(pop -> (pop instanceof Ore) || (pop instanceof Dungeon) || (pop instanceof RandomBlock));
                 Object[] layers = biomeData.getGroundCoverLayers().toArray();
                 for (Object layer : layers) {
-                    //((GroundCoverLayer)layer).setBlockState(BlockTypes.BRICK_BLOCK.getDefaultState());
+                    ((GroundCoverLayer) layer).setBlockState(BlockTypes.BRICK_BLOCK.getDefaultState());
                 }
                 biomeData.setMaxHeight(0.25f);
                 biomeData.setMinHeight(0.15f);
-                //biomeData.getPopulators().clear();
+                biomeData.getPopulators().clear();
                 //biomeData.getGenerationPopulators(GenerationPopulator)
                 biomeData.getGenerationPopulators().clear();
+                biomeData.getGroundCoverLayers().clear();
 
                 List<GroundCoverLayer> biomeLayers = biomeData.getGroundCoverLayers();
                 groundCoverPopulator.getBiomeLayers(biomeType).addAll(biomeLayers);
                 biomeLayers.clear();
-                //biomeData.getGenerationPopulators().clear();
+                biomeData.getGenerationPopulators().clear();
             }
-            //worldGenerator.getPopulators().clear();
-            worldGenerator.getPopulators(Dungeon.class).clear();
             worldGenerator.getPopulators().clear();
-
-            originalGenerationPopulator = worldGenerator.getBaseGenerationPopulator();
             worldGenerator.getGenerationPopulators().clear();
-
-            GenerationPopulatorAdapter sinusoidalGenerator = new GenerationPopulatorAdapter(-40, 40, perlinMaps);
-            sinusoidalGenerator.getPopulators().add(originalGenerationPopulator);
-            sinusoidalGenerator.getPopulators().add(groundCoverPopulator);
-
+            worldGenerator.getGenerationPopulators().add(groundCoverPopulator);
+            CivcraftGenerator civcraftGenerator = new CivcraftGenerator();
+            civcraftGenerator.getPopulators().add(new TerrainGeneration());
 
             worldGenerator.setBiomeGenerator(new IslandBiomeGen());
-            worldGenerator.setBaseGenerationPopulator(sinusoidalGenerator);
+            worldGenerator.setBaseGenerationPopulator(civcraftGenerator);
         }
 
         @Override
@@ -77,15 +74,11 @@ public class WorldGeneration {
         }
     }
 
-    public class GenerationPopulatorAdapter implements GenerationPopulator {
-        public final int offsetY, minY;
+    public class CivcraftGenerator implements GenerationPopulator {
         private final List<GenerationPopulator> populators = new ArrayList<>();
-        private final PerlinMaps maps;
 
-        public GenerationPopulatorAdapter(int offsetY, int minY, PerlinMaps maps) {
-            this.offsetY = offsetY;
-            this.minY = minY;
-            this.maps = maps;
+        public CivcraftGenerator() {
+
         }
 
         public List<GenerationPopulator> getPopulators() {
@@ -93,14 +86,37 @@ public class WorldGeneration {
         }
 
         @Override
-        public void populate(World world, MutableBlockVolume volume, ImmutableBiomeVolume biomes) {
-            MutableBlockVolumeAdapter adapter = new MutableBlockVolumeAdapter(volume, this.offsetY, this.minY, world, maps);
+        public void populate(World world, MutableBlockVolume buffer, ImmutableBiomeVolume biomes) {
 
             for (GenerationPopulator p : this.populators) {
                 try {
-                    p.populate(world, adapter, biomes);
+                    p.populate(world, buffer, biomes);
                 } catch (Exception e) {
                     civcraftRedefined.getInstance().getLogger().error("Generation populator '" + p.getClass().getName() + "' has thrown an exception", e);
+                }
+            }
+
+
+        }
+    }
+
+    public class TerrainGeneration implements GenerationPopulator {
+
+        @Override
+        public void populate(World world, MutableBlockVolume buffer, ImmutableBiomeVolume biomes) {
+            double height;
+            final int water = 30;
+            for (int x = buffer.getBlockMin().getX(); x <= buffer.getBlockMax().getX(); x++) {
+                for (int z = buffer.getBlockMin().getZ(); z <= buffer.getBlockMax().getZ(); z++) {
+                    buffer.setBlockType(x, 0, z, BlockTypes.BEDROCK);
+
+                    height = perlinMaps.getAdjustedHeight(x, z);
+                    height += water - 6;
+                    for (int y = 1; y < height; y++)
+                        buffer.setBlockType(x, y, z, BlockTypes.STONE);
+                    for (int y = (int) height; y < water; y++)
+                        buffer.setBlockType(x, y, z, BlockTypes.WATER);
+
                 }
             }
         }

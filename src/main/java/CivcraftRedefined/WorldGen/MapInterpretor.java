@@ -13,11 +13,10 @@ import java.io.IOException;
 public class MapInterpretor {
     private BiomeType[][] array2D;
     private int width, height;
-    private int sizeMultiplier;
+    public static int sizeMultiplier = 4;
 
     public MapInterpretor(String mapName) {
         Sponge.getServer().getConsole().sendMessage(Text.of(new File(mapName).getAbsolutePath()));
-        sizeMultiplier = 4;
         try {
             BufferedImage image = ImageIO.read(new File(mapName));
             width = image.getWidth();
