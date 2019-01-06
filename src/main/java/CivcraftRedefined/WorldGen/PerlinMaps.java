@@ -29,8 +29,12 @@ public class PerlinMaps {
         return (int) result;
     }
 
-    public double getSurfaceTexture(int x, int y) {
-        return PERLIN1.eval(((double) x) / 20, ((double) y) / 16);
+    public double getSurfaceTexture(int x, int y, int size) {
+        return (PERLIN1.eval(((double) x) / size, ((double) y) / size) + (1 - PERLIN1.eval(((double) x - 50) / size, ((double) y - 50) / size))) / 2;
+    }
+
+    public boolean isMesaTransition(double x, double y) {
+        return (PERLIN1.eval(x / 128, y / 128) > 0.58) && (PERLIN1.eval(x / 128, y / 128) < 0.62);
     }
 
     public int getPlains(double x, double y) {

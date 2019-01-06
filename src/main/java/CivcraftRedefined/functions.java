@@ -241,7 +241,7 @@ public class functions {
         distance += radiusInner;
 
         Optional<Location<World>> resultLoc = Sponge.getGame().getTeleportHelper().getSafeLocation(new Location<World>(
-                Sponge.getServer().getWorld(Sponge.getServer().getDefaultWorldName()).get(), (int) (distance * Math.cos(angle)), 240, (int) (distance * Math.sin(angle))), 200, 10);
+                Sponge.getServer().getWorld(Sponge.getServer().getDefaultWorldName()).get(), (int) (distance * Math.cos(angle)), 128, (int) (distance * Math.sin(angle))), 240, 10);
         if (resultLoc.isPresent()) {
             result = new Transform<World>(resultLoc.get());
             if (resultLoc.get().getBlockRelative(Direction.DOWN).getBlockRelative(Direction.DOWN).getBlockType().equals(BlockTypes.WATER))
