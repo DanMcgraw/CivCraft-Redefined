@@ -3,12 +3,13 @@ package CivcraftRedefined.WorldGen;
 import CivcraftRedefined.civcraftRedefined;
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.biome.BiomeGenerationSettings;
 import org.spongepowered.api.world.biome.BiomeType;
-import org.spongepowered.api.world.biome.GroundCoverLayer;
+import org.spongepowered.api.world.biome.BiomeTypes;
 import org.spongepowered.api.world.extent.ImmutableBiomeVolume;
 import org.spongepowered.api.world.extent.MutableBiomeVolume;
 import org.spongepowered.api.world.extent.MutableBlockVolume;
@@ -16,9 +17,6 @@ import org.spongepowered.api.world.gen.BiomeGenerator;
 import org.spongepowered.api.world.gen.GenerationPopulator;
 import org.spongepowered.api.world.gen.WorldGenerator;
 import org.spongepowered.api.world.gen.WorldGeneratorModifier;
-import org.spongepowered.api.world.gen.populator.Dungeon;
-import org.spongepowered.api.world.gen.populator.Ore;
-import org.spongepowered.api.world.gen.populator.RandomBlock;
 import org.spongepowered.api.world.storage.WorldProperties;
 
 import java.util.ArrayList;
@@ -26,38 +24,23 @@ import java.util.List;
 
 public class WorldGeneration {
     private PerlinMaps perlinMaps;
+
     public class SolidWorldGeneratorModifier implements WorldGeneratorModifier {
         @Override
         public void modifyWorldGenerator(WorldProperties world, DataContainer settings, WorldGenerator worldGenerator) {
             perlinMaps = new PerlinMaps(world.getSeed());
-            GroundCoverLayerPopulator groundCoverPopulator = new GroundCoverLayerPopulator();
-            civcraftRedefined.getInstance().getLogger().info(civcraftRedefined.getMapInterpretor().getBiomeAt(0, 0).getName());
-            civcraftRedefined.getInstance().getLogger().info(civcraftRedefined.getMapInterpretor().getBiomeAt(20, 250).getName());
 
             for (BiomeType biomeType : Sponge.getRegistry().getAllOf(BiomeType.class)) {
                 BiomeGenerationSettings biomeData = worldGenerator.getBiomeSettings(biomeType);
-                biomeData.getPopulators().removeIf(pop -> (pop instanceof Ore) || (pop instanceof Dungeon) || (pop instanceof RandomBlock));
-                Object[] layers = biomeData.getGroundCoverLayers().toArray();
-                for (Object layer : layers) {
-                    ((GroundCoverLayer) layer).setBlockState(BlockTypes.BRICK_BLOCK.getDefaultState());
-                }
-                biomeData.setMaxHeight(0.25f);
-                biomeData.setMinHeight(0.15f);
                 biomeData.getPopulators().clear();
-                //biomeData.getGenerationPopulators(GenerationPopulator)
                 biomeData.getGenerationPopulators().clear();
                 biomeData.getGroundCoverLayers().clear();
-
-                List<GroundCoverLayer> biomeLayers = biomeData.getGroundCoverLayers();
-                groundCoverPopulator.getBiomeLayers(biomeType).addAll(biomeLayers);
-                biomeLayers.clear();
-                biomeData.getGenerationPopulators().clear();
             }
             worldGenerator.getPopulators().clear();
             worldGenerator.getGenerationPopulators().clear();
-            worldGenerator.getGenerationPopulators().add(groundCoverPopulator);
             CivcraftGenerator civcraftGenerator = new CivcraftGenerator();
             civcraftGenerator.getPopulators().add(new TerrainGeneration());
+            civcraftGenerator.getPopulators().add(new TopLayerGeneration());
 
             worldGenerator.setBiomeGenerator(new IslandBiomeGen());
             worldGenerator.setBaseGenerationPopulator(civcraftGenerator);
@@ -112,11 +95,43 @@ public class WorldGeneration {
 
                     height = perlinMaps.getAdjustedHeight(x, z);
                     height += water - 6;
-                    for (int y = 1; y < height; y++)
+                    for (int y = 1; y < (int) height; y++)
                         buffer.setBlockType(x, y, z, BlockTypes.STONE);
                     for (int y = (int) height; y < water; y++)
                         buffer.setBlockType(x, y, z, BlockTypes.WATER);
 
+                }
+            }
+        }
+    }
+
+    public class TopLayerGeneration implements GenerationPopulator {
+
+        @Override
+        public void populate(World world, MutableBlockVolume buffer, ImmutableBiomeVolume biomes) {
+            double height;
+            final int water = 30;
+            for (int x = buffer.getBlockMin().getX(); x <= buffer.getBlockMax().getX(); x++) {
+                for (int z = buffer.getBlockMin().getZ(); z <= buffer.getBlockMax().getZ(); z++) {
+                    height = perlinMaps.getAdjustedHeight(x, z);
+                    //height += water - 6;
+                    List<BlockState> topBlocks = new ArrayList<>();
+                    if (world.getBiome(x, 0, z).equals(BiomeTypes.MESA)) {
+                        if (height < water)
+                            topBlocks.add((perlinMaps.getSurfaceTexture(x, z) > 0.6) ? (BlockState) BlockTypes.CONCRETE_POWDER.getAllBlockStates().toArray()[14] : BlockTypes.GRAVEL.getDefaultState());
+                        else
+                            topBlocks.add((perlinMaps.getSurfaceTexture(x, z) > 0.7) ? (BlockState) BlockTypes.CONCRETE_POWDER.getAllBlockStates().toArray()[14] : (BlockState) BlockTypes.SAND.getAllBlockStates().toArray()[1]);
+                        topBlocks.add(BlockTypes.RED_SANDSTONE.getDefaultState());
+                        topBlocks.add(BlockTypes.RED_SANDSTONE.getDefaultState());
+                        for (int i = (int) height - 1; i > height - 1 - topBlocks.size() * 2 && i > 0; i--)
+                            buffer.setBlock(x, i, z, topBlocks.get(((int) height - 1 - i) / 2));
+                    }
+                    if (world.getBiome(x, 0, z).equals(BiomeTypes.MESA_PLATEAU)) {
+                        for (int i = (int) height - 1; i > water; i--) {
+                            if ((perlinMaps.getAdjustedHeight(x - 1, z) < i) || (perlinMaps.getAdjustedHeight(x, z - 1) < i) || (perlinMaps.getAdjustedHeight(x, z + 1) < i) || (perlinMaps.getAdjustedHeight(x + 1, z) < i))
+                                buffer.setBlockType(x, i, z, BlockTypes.STAINED_HARDENED_CLAY);
+                        }
+                    }
                 }
             }
         }

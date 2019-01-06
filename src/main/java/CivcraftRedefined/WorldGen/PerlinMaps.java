@@ -29,6 +29,10 @@ public class PerlinMaps {
         return (int) result;
     }
 
+    public double getSurfaceTexture(int x, int y) {
+        return PERLIN1.eval(((double) x) / 20, ((double) y) / 16);
+    }
+
     public int getPlains(double x, double y) {
         double result;
         result = PERLIN2.eval(x / 100, y / 100) / 3;
@@ -117,6 +121,6 @@ public class PerlinMaps {
         result = (diag) / 20 + (axis) / 16 + avg / 8 + result / 2;
 
 
-        return result;
+        return result + 24;
     }
 }

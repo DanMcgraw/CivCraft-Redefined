@@ -24,6 +24,7 @@ import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.entity.living.humanoid.player.RespawnPlayerEvent;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.filter.cause.Root;
+import org.spongepowered.api.event.game.GameRegistryEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.item.inventory.DropItemEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
@@ -94,7 +95,6 @@ public class civcraftRedefined {
         commands = new Commands();
 
         mapInterpretor = new MapInterpretor("config/civcraft/map.bmp");
-        Sponge.getRegistry().register(WorldGeneratorModifier.class, new WorldGeneration().new SolidWorldGeneratorModifier());
         asyncScheduler = Sponge.getScheduler().createAsyncExecutor(this);
         syncScheduler = Sponge.getScheduler().createSyncExecutor(this);
 
@@ -102,6 +102,11 @@ public class civcraftRedefined {
         oreTypeMap = new HashMap<Location<World>, Integer>();
         playerDeathXP = new HashMap<UUID, Integer>();
         databaseCommands = new DatabaseCommands();
+    }
+
+    @Listener
+    public void onGameRegistry(GameRegistryEvent.Register<WorldGeneratorModifier> event) {
+        event.register(new WorldGeneration().new SolidWorldGeneratorModifier());
     }
 
     @Listener
