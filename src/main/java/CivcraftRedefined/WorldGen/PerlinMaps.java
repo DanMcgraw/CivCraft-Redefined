@@ -39,12 +39,27 @@ public class PerlinMaps {
 
     public int getPlains(double x, double y) {
         double result;
-        result = PERLIN2.eval(x / 100, y / 100) / 3;
-        result += PERLIN3.eval(x / 50, y / 50) / 2;
+        result = PERLIN3.eval(x / 64, y / 64) / 3;
+        result += PERLIN2.eval(x / 50, y / 50) / 2;
         result *= PERLIN3.eval(y / 128, x / 128);
         result = 1 - result * (result + 1);
-        result *= 12;
+        result *= 16;
         result = Math.max(1, result);
+        result = Math.min(200, result);
+
+        return (int) result;
+    }
+
+    public int getHills(double x, double y) {
+        double result;
+        result = PERLIN3.eval(x / 32, y / 32) / 3;
+        result += PERLIN2.eval(x / 50, y / 50);
+        result = Math.sqrt(result / 2);
+        result = 1 - result * (result + 1);
+
+        result *= 18;
+        result += 11;
+        result = Math.max(7, result);
         result = Math.min(200, result);
 
         return (int) result;
@@ -67,6 +82,10 @@ public class PerlinMaps {
                 return getMesaPlateau(x, y);
             case "Plains":
                 return getPlains(x, y);
+            case "Desert":
+                return getPlains(x, y) / 2 + 5;
+            case "DesertHills":
+                return getHills(x, y);
             case "Deep Ocean":
                 return getDeepOcean(x, y);
             default:
@@ -122,9 +141,8 @@ public class PerlinMaps {
         diag += PERLIN3.eval((double) y / 18, (double) x / 18) * rangeMax - rangeMax / 3;
         int axis = q5 + q6 + q7 + q8;
         axis += PERLIN3.eval((double) x / 18, (double) y / 18) * rangeMax - rangeMax / 3;
-        result = (diag) / 20 + (axis) / 16 + avg / 8 + result / 2;
+        result = (diag) / 20 + (axis) / 16 + avg / 4 + (int) ((double) result / 1.8);
 
-
-        return result + 24;
+        return Math.max(2, result + 24);
     }
 }

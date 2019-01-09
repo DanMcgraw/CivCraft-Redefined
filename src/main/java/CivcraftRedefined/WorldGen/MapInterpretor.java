@@ -17,7 +17,7 @@ public class MapInterpretor {
     private boolean[][] array2DBordersx4;
     private boolean[][] array2DBorders;
     private int width, height;
-    public static int sizeMultiplier = 4;
+    public static int sizeMultiplier = 8;
 
     public MapInterpretor(String mapName) {
         Sponge.getServer().getConsole().sendMessage(Text.of(new File(mapName).getAbsolutePath()));

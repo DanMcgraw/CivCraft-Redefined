@@ -42,6 +42,7 @@ public class WorldGeneration {
             civcraftGenerator.getPopulators().add(new TerrainGeneration());
             civcraftGenerator.getPopulators().add(new TopLayerGeneration());
             civcraftGenerator.getPopulators().add(new MesaColorLayers());
+            civcraftGenerator.getPopulators().add(new TopPops());
 
             worldGenerator.setBiomeGenerator(new IslandBiomeGen());
             worldGenerator.setBaseGenerationPopulator(civcraftGenerator);
@@ -139,7 +140,36 @@ public class WorldGeneration {
                         topBlocks.add(BlockTypes.STAINED_HARDENED_CLAY.getDefaultState());
                         for (int i = (int) height - 1; i > height - 1 - topBlocks.size() * 2 && i > 0; i--)
                             buffer.setBlock(x, i, z, topBlocks.get(((int) height - 1 - i) / 2));
-
+                    }
+                    if (world.getBiome(x, 0, z).equals(BiomeTypes.PLAINS) || world.getBiome(x, 0, z).equals(BiomeTypes.TAIGA_HILLS)) {
+                        //buffer.setBlockType(x,perlinMaps.getMesaPlateau(x,z),z,BlockTypes.STAINED_HARDENED_CLAY);
+                        if (civcraftRedefined.getMapInterpretor().isBorderLarge(x, z))
+                            for (int i = (int) height - 1; i > water; i--)
+                                buffer.setBlockType(x, i, z, BlockTypes.STAINED_HARDENED_CLAY);
+                        if (perlinMaps.isMesaTransition(x, z))
+                            for (int i = (int) height - 1; i > water + 28; i--)
+                                buffer.setBlockType(x, i, z, BlockTypes.STAINED_HARDENED_CLAY);
+                        topBlocks.add((perlinMaps.getSurfaceTexture(x, z, 30) > 0.4) ? BlockTypes.STAINED_HARDENED_CLAY.getDefaultState() : (BlockState) BlockTypes.SAND.getAllBlockStates().toArray()[1]);
+                        topBlocks.add(BlockTypes.STAINED_HARDENED_CLAY.getDefaultState());
+                        topBlocks.add(BlockTypes.STAINED_HARDENED_CLAY.getDefaultState());
+                        for (int i = (int) height - 1; i > height - 1 - topBlocks.size() * 2 && i > 0; i--)
+                            buffer.setBlock(x, i, z, topBlocks.get(((int) height - 1 - i) / 2));
+                    }
+                    if (world.getBiome(x, 0, z).equals(BiomeTypes.DESERT_HILLS) || world.getBiome(x, 0, z).equals(BiomeTypes.DESERT)) {
+                        //buffer.setBlockType(x,perlinMaps.getMesaPlateau(x,z),z,BlockTypes.STAINED_HARDENED_CLAY);
+                        if (civcraftRedefined.getMapInterpretor().isBorderLarge(x, z))
+                            for (int i = (int) height - 1; i > water; i--)
+                                buffer.setBlockType(x, i, z, BlockTypes.SAND);
+                        if (height > 45)
+                            topBlocks.add((BlockState) BlockTypes.SAND.getAllBlockStates().toArray()[1]);
+                        else if (height > 40)
+                            topBlocks.add((perlinMaps.getSurfaceTexture(x, z, 2) > 1 - ((height - 41) / 5)) ? (BlockState) BlockTypes.SAND.getAllBlockStates().toArray()[1] : BlockTypes.SAND.getDefaultState());
+                        else
+                            topBlocks.add(BlockTypes.SAND.getDefaultState());
+                        topBlocks.add(BlockTypes.SAND.getDefaultState());
+                        topBlocks.add(BlockTypes.SANDSTONE.getDefaultState());
+                        for (int i = (int) height - 1; i > height - 1 - topBlocks.size() * 2 && i > 0; i--)
+                            buffer.setBlock(x, i, z, topBlocks.get(((int) height - 1 - i) / 2));
                     }
                 }
             }
@@ -184,6 +214,28 @@ public class WorldGeneration {
 //                        for (int i = (int) height - 1; i > height - 1 - topBlocks.size() * 2 && i > 0; i--)
 //                            buffer.setBlock(x, i, z, topBlocks.get(((int) height - 1 - i) / 2));
 
+                    }
+                }
+            }
+        }
+    }
+
+    public class TopPops implements GenerationPopulator {
+
+        @Override
+        public void populate(World world, MutableBlockVolume buffer, ImmutableBiomeVolume biomes) {
+            double height;
+            final int water = 30;
+            for (int x = buffer.getBlockMin().getX(); x <= buffer.getBlockMax().getX(); x++) {
+                for (int z = buffer.getBlockMin().getZ(); z <= buffer.getBlockMax().getZ(); z++) {
+                    height = perlinMaps.getAdjustedHeight(x, z);
+                    if (world.getBiome(x, 0, z).equals(BiomeTypes.MESA_PLATEAU)) {
+                        if (perlinMaps.getSurfaceTexture(x, z, 1) > 0.85)
+                            buffer.setBlockType(x, (int) height, z, BlockTypes.DEADBUSH);
+                        if (perlinMaps.getSurfaceTexture(x, z, 9) > 0.86)
+                            buffer.setBlockType(x, (int) height, z, BlockTypes.GRAVEL);
+                        if (perlinMaps.getSurfaceTexture(x, z, 9) > 0.80)
+                            buffer.setBlockType(x, (int) height - 1, z, BlockTypes.GRAVEL);
                     }
                 }
             }
