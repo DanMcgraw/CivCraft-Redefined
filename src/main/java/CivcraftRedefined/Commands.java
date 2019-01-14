@@ -1,5 +1,8 @@
 package CivcraftRedefined;
 
+import CivcraftRedefined.WorldGen.VillageGen.StructGenrat;
+import CivcraftRedefined.WorldGen.VillageGen.StructIntrp;
+import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -10,6 +13,8 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.profile.GameProfileManager;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -27,6 +32,42 @@ public class Commands {
                 String playerName = args.<String>getOne("player name").get();
 
                 civcraftRedefined.getDatabase().unbanPlayer(getUser(playerName));
+
+                return CommandResult.success();
+            })
+            .build();
+
+    CommandSpec createStructure = CommandSpec.builder()
+            .description(Text.of("Creates the structure nearby"))
+            .permission("civcraft.command.struct")
+
+            .arguments(
+                    GenericArguments.optional(GenericArguments.string(Text.of("biome"))))
+
+            .executor((CommandSource src, CommandContext args) -> {
+
+                String playerName;
+
+                if (args.getOne("biome").isPresent())
+                    playerName = args.<String>getOne("biome").get();
+
+                if (src instanceof Player) {
+                    Player player = (Player) src;
+                    Location<World> location = player.getLocation();
+
+                    location.add(new Vector3i(20, 0, 0));
+                    Vector3i loc = location.getPosition().toInt();
+                    StructGenrat structGenrat = new StructGenrat(player.getWorld());
+                    StructIntrp.Structure struct = structGenrat.createStructure(0, 0, 0);
+                    for (int x = 0; x < struct.wHL.getX(); x++)
+                        for (int y = 0; y < struct.wHL.getY(); y++)
+                            for (int z = 0; z < struct.wHL.getZ(); z++)
+                                if (struct.blockData[x][y][z] != null)
+                                    player.getWorld().setBlock(loc.getX() + x, loc.getY() + y, loc.getZ() + z, struct.blockData[x][y][z]);
+                }
+
+                //civcraftRedefined.getDatabase().unbanPlayer(getUser(playerName));
+
 
                 return CommandResult.success();
             })
@@ -64,6 +105,7 @@ public class Commands {
     public Commands() {
         Sponge.getCommandManager().register(civcraftRedefined.getInstance(), unTempBan, "untempban");
         Sponge.getCommandManager().register(civcraftRedefined.getInstance(), biomeStats, "bio");
+        Sponge.getCommandManager().register(civcraftRedefined.getInstance(), createStructure, "struct");
     }
 
     public UUID getUser(String name) {

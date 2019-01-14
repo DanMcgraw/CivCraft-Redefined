@@ -5,6 +5,7 @@ import CivcraftRedefined.WorldGen.VillageGen.StructIntrp.StrTypes;
 import CivcraftRedefined.WorldGen.VillageGen.StructIntrp.Structure;
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.block.BlockState;
+import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.world.World;
 
 public class StructGenrat {
@@ -16,45 +17,16 @@ public class StructGenrat {
         perlin = new Perlin(seed);
     }
 
-    private static BlockState[][][] getRing(int radius, BlockState blockType) {
-        radius = (radius / 2) * 2;
-
-    }
-
-    private static BlockState[][][] mergeBlockState(BlockState[][][] master, BlockState[][][] slave) {
-        Vector3i wHL = getBlockStateSize(master);
-        Vector3i wHLS = getBlockStateSize(slave);
-        Vector3i dif = wHL.sub(wHLS).div(2);
-
-        for (int x = dif.getX(); x < wHL.getX() - dif.getX(); x++)
-            for (int y = dif.getY(); y < wHL.getY() - dif.getY(); y++)
-                for (int z = dif.getZ(); z < wHL.getZ() - dif.getZ(); z++)
-                    if (slave[x - dif.getX()][y - dif.getY()][z - dif.getZ()] != null)
-                        master[x][y][z] = slave[x - dif.getX()][y - dif.getY()][z - dif.getZ()];
-
-        return master;
-    }
-
-    private static BlockState[][][] mergeBlockStateSoft(BlockState[][][] master, BlockState[][][] slave) {
-        Vector3i wHL = getBlockStateSize(master);
-        Vector3i wHLS = getBlockStateSize(slave);
-        Vector3i dif = wHL.sub(wHLS).div(2);
-
-        for (int x = dif.getX(); x < wHL.getX() - dif.getX(); x++)
-            for (int y = dif.getY(); y < wHL.getY() - dif.getY(); y++)
-                for (int z = dif.getZ(); z < wHL.getZ() - dif.getZ(); z++)
-                    if (slave[x - dif.getX()][y - dif.getY()][z - dif.getZ()] != null && master[x][y][z] == null)
-                        master[x][y][z] = slave[x - dif.getX()][y - dif.getY()][z - dif.getZ()];
-
-        return master;
-    }
-
-    private static Vector3i getBlockStateSize(BlockState[][][] master) {
-        int x = master.length;
-        int y = master[0].length;
-        int z = master[0][0].length;
-
-        return new Vector3i(x, y, z);
+    private static BlockState[][][] getRing(int diameter, BlockState blockType) {
+        diameter = (diameter / 2) * 2;
+        BlockState[][][] ring = new BlockState[diameter][diameter][diameter];
+        for (int i = 1; i < diameter; i++) {
+            ring[i][0][0] = blockType;
+            ring[i][0][diameter - 1] = blockType;
+            ring[0][0][i] = blockType;
+            ring[diameter - 1][0][i] = blockType;
+        }
+        return ring;
     }
 
     //return number 0.75-1.00
@@ -68,7 +40,9 @@ public class StructGenrat {
     public Structure createStructure(int type, double ratio, int importance) {
         Vector3i widthHeightLength = new Vector3i(8, 8, 8);
         Structure structure = new Structure(StrTypes.KEEP, widthHeightLength);
-        new BlockState[][][]
+
+        for (int height = 0; height < 6; height++)
+            StructIntrp.mergeBlockState(structure, getRing(6, BlockTypes.GOLD_BLOCK.getDefaultState()), height);
         return structure;
     }
 
