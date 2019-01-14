@@ -25,3 +25,6 @@ Planned features:
 - One player can be a part of only one group
 - Stat bonuses will be given to players based on group size
 - Group members can vote a mutiny on their leader by voting in a new leader
+- Village spawning is random with fancy generated buildings
+- Villagers are player entities that defend the village and give quests
+- Villages are adventure mode only
