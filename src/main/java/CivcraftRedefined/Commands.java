@@ -55,9 +55,9 @@ public class Commands {
                     Player player = (Player) src;
                     Location<World> location = player.getLocation();
 
-                    location.add(new Vector3i(20, 0, 0));
+
                     Vector3i loc = location.getPosition().toInt();
-                    StructGenrat structGenrat = new StructGenrat(player.getWorld());
+                    StructGenrat structGenrat = new StructGenrat(player.getWorld().getProperties());
                     StructIntrp.Structure struct = structGenrat.createStructure(0, 0, 0);
                     for (int x = 0; x < struct.wHL.getX(); x++)
                         for (int y = 0; y < struct.wHL.getY(); y++)

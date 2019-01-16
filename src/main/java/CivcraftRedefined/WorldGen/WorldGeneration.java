@@ -1,5 +1,6 @@
 package CivcraftRedefined.WorldGen;
 
+import CivcraftRedefined.WorldGen.VillageGen.VillageGenerator;
 import CivcraftRedefined.civcraftRedefined;
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.Sponge;
@@ -39,10 +40,12 @@ public class WorldGeneration {
             worldGenerator.getPopulators().clear();
             worldGenerator.getGenerationPopulators().clear();
             CivcraftGenerator civcraftGenerator = new CivcraftGenerator();
+            VillageGenerator villageGenerator = new VillageGenerator(perlinMaps, world);
             civcraftGenerator.getPopulators().add(new TerrainGeneration());
             civcraftGenerator.getPopulators().add(new TopLayerGeneration());
             civcraftGenerator.getPopulators().add(new MesaColorLayers());
             civcraftGenerator.getPopulators().add(new TopPops());
+            civcraftGenerator.getPopulators().add(villageGenerator);
 
             worldGenerator.setBiomeGenerator(new IslandBiomeGen());
             worldGenerator.setBaseGenerationPopulator(civcraftGenerator);

@@ -93,6 +93,8 @@ public class civcraftRedefined {
         instance = this;
 
         commands = new Commands();
+        databaseCommands = new DatabaseCommands();
+
 
         mapInterpretor = new MapInterpretor("config/civcraft/map.bmp");
         asyncScheduler = Sponge.getScheduler().createAsyncExecutor(this);
@@ -101,7 +103,6 @@ public class civcraftRedefined {
         this.getLogger().info("Civcraft Redefined has been initialized");
         oreTypeMap = new HashMap<Location<World>, Integer>();
         playerDeathXP = new HashMap<UUID, Integer>();
-        databaseCommands = new DatabaseCommands();
     }
 
     @Listener

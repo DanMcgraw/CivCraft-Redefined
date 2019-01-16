@@ -50,6 +50,20 @@ public class PerlinMaps {
         return (int) result;
     }
 
+    public int getBeaches(double x, double y) {
+        double result;
+        result = PERLIN3.eval(x / 64, y / 64) / 3;
+        result += PERLIN2.eval(x / 50, y / 50) / 2;
+        result *= PERLIN3.eval(y / 128, x / 128);
+        result = 1 - result * (result + 1);
+        result *= 14;
+        result -= 4;
+        result = Math.max(7, result);
+        result = Math.min(20, result);
+
+        return (int) result;
+    }
+
     public int getHills(double x, double y) {
         double result;
         result = PERLIN3.eval(x / 32, y / 32) / 3;
@@ -76,6 +90,16 @@ public class PerlinMaps {
         return (int) result;
     }
 
+    public int getOcean(double x, double y) {
+        double result;
+        result = PERLIN1.eval(x / 128, y / 128);
+        result *= -10;
+        result = Math.max(-12, result);
+        result = Math.min(3, result);
+
+        return (int) result;
+    }
+
     public int getHeight(int x, int y) {
         switch (mapInterpretor.getBiomeAt(x, y).getName()) {
             case "Mesa Plateau":
@@ -88,6 +112,10 @@ public class PerlinMaps {
                 return getHills(x, y);
             case "Deep Ocean":
                 return getDeepOcean(x, y);
+            case "Beach":
+                return getBeaches(x, y);
+            case "Ocean":
+                return getOcean(x, y);
             default:
                 return getPlains(x, y);
 
@@ -111,6 +139,12 @@ public class PerlinMaps {
                 return 8;
             case "Plains":
                 return 3;
+            case "Beach":
+                return 10;
+            case "Ocean":
+                return 20;
+            case "Deep Ocean":
+                return 25;
             default:
                 return 5;
 
@@ -123,10 +157,10 @@ public class PerlinMaps {
         int rangeMax = getRangeForBiome(mapInterpretor.getBiomeAt(x, y));
 
         List<Integer> qs = new ArrayList<Integer>();
-        int range = (int) (PERLIN2.eval(x / 20, y / 20) * rangeMax / 2);
+        int range = (int) (PERLIN2.eval(x / 20, y / 20) * rangeMax / 2 + rangeMax / 4);
         for (int i = -range; i <= range; i += 1)
             for (int j = -range; j <= range; j += 1) {
-                qs.add(getHeight(x + i, y + i));
+                qs.add(getHeight(x + i * 4, y + i * 4));
             }
         int avg = (int) calculateAverage(qs);
         int q1 = getHeight(x + 2, y + 2);
@@ -141,7 +175,7 @@ public class PerlinMaps {
         diag += PERLIN3.eval((double) y / 18, (double) x / 18) * rangeMax - rangeMax / 3;
         int axis = q5 + q6 + q7 + q8;
         axis += PERLIN3.eval((double) x / 18, (double) y / 18) * rangeMax - rangeMax / 3;
-        result = (diag) / 20 + (axis) / 16 + avg / 4 + (int) ((double) result / 1.8);
+        result = (diag) / 20 + (axis) / 16 + avg / 2 + (int) ((double) result / 5);
 
         return Math.max(2, result + 24);
     }

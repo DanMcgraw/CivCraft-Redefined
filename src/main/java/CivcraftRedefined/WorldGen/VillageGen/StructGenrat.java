@@ -6,14 +6,14 @@ import CivcraftRedefined.WorldGen.VillageGen.StructIntrp.Structure;
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockTypes;
-import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.storage.WorldProperties;
 
 public class StructGenrat {
     private long seed;
     private Perlin perlin;
 
-    public StructGenrat(World world) {
-        seed = world.getProperties().getSeed();
+    public StructGenrat(WorldProperties world) {
+        seed = world.getSeed();
         perlin = new Perlin(seed);
     }
 
@@ -22,8 +22,8 @@ public class StructGenrat {
         BlockState[][][] ring = new BlockState[diameter][diameter][diameter];
         for (int i = 1; i < diameter; i++) {
             ring[i][0][0] = blockType;
-            ring[i][0][diameter - 1] = blockType;
-            ring[0][0][i] = blockType;
+            ring[i - 1][0][diameter - 1] = blockType;
+            ring[0][0][i - 1] = blockType;
             ring[diameter - 1][0][i] = blockType;
         }
         return ring;
@@ -43,6 +43,8 @@ public class StructGenrat {
 
         for (int height = 0; height < 6; height++)
             StructIntrp.mergeBlockState(structure, getRing(6, BlockTypes.GOLD_BLOCK.getDefaultState()), height);
+        StructIntrp.replaceBlocksChance(structure, BlockTypes.GOLD_BLOCK.getDefaultState(), BlockTypes.AIR.getDefaultState(), 0.5);
+        StructIntrp.removeBlocks(structure, BlockTypes.AIR.getDefaultState());
         return structure;
     }
 

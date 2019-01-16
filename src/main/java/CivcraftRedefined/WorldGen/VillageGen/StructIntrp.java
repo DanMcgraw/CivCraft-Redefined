@@ -1,5 +1,6 @@
 package CivcraftRedefined.WorldGen.VillageGen;
 
+import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.block.BlockState;
 
@@ -26,8 +27,8 @@ public class StructIntrp {
         for (int x = dif.getX(); x < wHL.getX() - dif.getX(); x++)
             for (int y = 0; y < wHL.getY() - dif.getY() * 2; y++)
                 for (int z = dif.getZ(); z < wHL.getZ() - dif.getZ(); z++)
-                    if (slave[x - dif.getX()][y - dif.getY()][z - dif.getZ()] != null && (y + height) < wHL.getY())
-                        master.blockData[x][y + height][z] = slave[x - dif.getX()][y - dif.getY()][z - dif.getZ()];
+                    if (slave[x - dif.getX()][y][z - dif.getZ()] != null && (y + height) < wHL.getY())
+                        master.blockData[x][y + height][z] = slave[x - dif.getX()][y][z - dif.getZ()];
 
     }
 
@@ -44,6 +45,36 @@ public class StructIntrp {
 
     }
 
+    public static void replaceBlocks(Structure master, BlockState get, BlockState put) {
+        Vector3i wHL = getBlockStateSize(master.blockData);
+
+        for (int x = 0; x < wHL.getX(); x++)
+            for (int y = 0; y < wHL.getY(); y++)
+                for (int z = 0; z < wHL.getZ(); z++)
+                    if (master.blockData[x][y][z].equals(get))
+                        master.blockData[x][y][z] = put;
+    }
+
+    public static void replaceBlocksChance(Structure master, BlockState get, BlockState put, double chance) {
+        Vector3i wHL = getBlockStateSize(master.blockData);
+
+        for (int x = 0; x < wHL.getX(); x++)
+            for (int y = 0; y < wHL.getY(); y++)
+                for (int z = 0; z < wHL.getZ(); z++)
+                    if (master.blockData[x][y][z] != null && master.blockData[x][y][z].equals(get) && Math.random() < chance)
+                        master.blockData[x][y][z] = put;
+    }
+
+    public static void removeBlocks(Structure master, BlockState get) {
+        Vector3i wHL = getBlockStateSize(master.blockData);
+
+        for (int x = 0; x < wHL.getX(); x++)
+            for (int y = 0; y < wHL.getY(); y++)
+                for (int z = 0; z < wHL.getZ(); z++)
+                    if (master.blockData[x][y][z] != null && master.blockData[x][y][z].equals(get))
+                        master.blockData[x][y][z] = null;
+    }
+
     public static Vector3i getBlockStateSize(BlockState[][][] master) {
         int x = master.length;
         int y = master[0].length;
@@ -52,8 +83,12 @@ public class StructIntrp {
         return new Vector3i(x, y, z);
     }
 
-    public static BlockState[] getXZColumn(int x, int z, Structure struct) {
-        return struct.blockData[x][z];
+    public static BlockState[] getColumn(int x, int z, Structure struct) {
+        BlockState[] column = new BlockState[struct.wHL.getY()];
+        for (int i = 0; i < column.length; i++) {
+            column[i] = struct.blockData[x][i][z];
+        }
+        return column;
     }
 
     public enum StrTypes {
@@ -70,6 +105,8 @@ public class StructIntrp {
         public int importance;
         public StrTypes type;
         public BlockState foundation;
+        public Vector2i vilRelative;
+        public Vector3i mapRelative;
 
         public Structure(StrTypes type, Vector3i wHL) {
             this.wHL = wHL.div(2).mul(2);

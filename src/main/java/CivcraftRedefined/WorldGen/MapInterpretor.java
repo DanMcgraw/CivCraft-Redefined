@@ -132,6 +132,10 @@ public class MapInterpretor {
                 return BiomeTypes.DESERT;
             case "ffdbde":
                 return BiomeTypes.MESA;
+            case "4090ff":
+                return BiomeTypes.OCEAN;
+            case "ffe75f":
+                return BiomeTypes.BEACH;
 
         }
         return BiomeTypes.DEEP_OCEAN;
