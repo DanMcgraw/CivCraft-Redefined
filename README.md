@@ -28,3 +28,13 @@ Planned features:
 - Village spawning is random with fancy generated buildings
 - Villagers are player entities that defend the village and give quests
 - Villages are adventure mode only
+- Bank building in village, with banker
+- Economy with gold nuggets/ingots/blocks as currency, can be deposited to bank for safekeeping
+- Hotbar is kept on player death if player has lives remaining
+- Banks can be upgraded to increase storage, gain interest, and become global among all cities/villages
+- Quests given by town people that give rewards such as town favor
+- Townspeople are infinite health, double attack, attacking anyone in a town will trigger guards to "sick you", inavoidable death unless you run, you become banished
+- In port towns you can pay to travel to any other port town or other mainlands
+- Market spaces are auctioned weekly, so players can sell to other players with more security
+- Market profit/items are in stealable chests, where every 4 hours a player may attempt to steal 15% of the coins or 1 random item
+- Certain quests can affect intertown diplomacy, will be too hard to do alone, high rewards
